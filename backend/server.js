@@ -1,5 +1,6 @@
 import cors from 'cors';
 import express from 'express';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -489,7 +490,26 @@ app.get('/api/players/compare/:id1/:id2', async (req, res) => {
 // Fallback to React index.html for non-API routes
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api')) return next();
-  res.sendFile(path.join(distPath, 'index.html'));
+  const indexPath = path.join(distPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+  res.status(200).send(`
+    <html>
+      <head><title>FootyPedia - Đang khởi động</title></head>
+      <body style="background:#020617;color:#f8fafc;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">
+        <div style="text-align:center;padding:24px;border:1px solid #1e293b;border-radius:16px;max-width:500px;background:#0f172a;">
+          <h2 style="color:#10b981;margin-bottom:8px;">⚽ FootyPedia Server Đang Hoạt Động</h2>
+          <p style="color:#94a3b8;font-size:14px;line-height:1.6;">
+            Backend đã kết nối thành công. Nếu bạn đang thấy trang này, vui lòng đảm bảo trên Render đã cấu hình <b>Build Command: npm run build</b>.
+          </p>
+          <div style="margin-top:16px;">
+            <a href="/api/players/trending" style="color:#38bdf8;font-size:13px;text-decoration:none;">Kiểm tra API dữ liệu ➔</a>
+          </div>
+        </div>
+      </body>
+    </html>
+  `);
 });
 
 app.listen(PORT, () => {
